@@ -1006,5 +1006,25 @@ PrefabInstance:
       propertyPath: m_MaxValue
       value: 200
       objectReference: {fileID: 0}
+    - target: {fileID: 4063529496269682305, guid: c8b6e7a53c29b244691c355bce8e8e0e,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4063529496269682305, guid: c8b6e7a53c29b244691c355bce8e8e0e,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4063529496269682305, guid: c8b6e7a53c29b244691c355bce8e8e0e,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.16900659
+      objectReference: {fileID: 0}
+    - target: {fileID: 4063529496269682305, guid: c8b6e7a53c29b244691c355bce8e8e0e,
+        type: 3}
+      propertyPath: m_FontData.m_FontStyle
+      value: 3
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c8b6e7a53c29b244691c355bce8e8e0e, type: 3}
