@@ -1,7 +1,4 @@
-﻿
-using System;
-using System.Collections;
-using FireSimulation.Core;
+﻿using FireSimulation.Core;
 using UnityEngine;
 
 namespace FireSimulation.Vegetation
@@ -15,7 +12,7 @@ namespace FireSimulation.Vegetation
         [SerializeField] private bool gridSpawn = false;
         [SerializeField] [Range(1, 10)] private float spawnRadius = 2;
         [Header("Base settings")]
-        [SerializeField] [Range(0, 20000)] int maxVegetationObjects = 0;
+        [SerializeField] [Range(0, 20000)] int maxPlants = 0;
         [SerializeField] [Range(1, 10)] private int randomIgnition = 4;
 
         [Header("Terrain parameters")]
@@ -89,14 +86,13 @@ namespace FireSimulation.Vegetation
             }
             else
             {
-                for (int i = 0; i < maxVegetationObjects; i++)
+                for (int i = 0; i < maxPlants; i++)
                 {
                     coordX = Mathf.Clamp(UnityEngine.Random.Range(0, terrainWidth), 0 + terrainEdgePadding, terrainWidth - terrainEdgePadding);
                     coordY = Mathf.Clamp(UnityEngine.Random.Range(0, terrainLength), 0 + terrainEdgePadding, terrainLength - terrainEdgePadding);
 
                     rayCastOrigin = new Vector3(coordX, terrainHeight + maxHeightTolerance, coordY);
-
-                    if (Physics.SphereCast(rayCastOrigin, spawnRadius, Vector3.down, out hit, terrainHeight + maxHeightTolerance, terrainLayerMask))
+                    if (Physics.Raycast(rayCastOrigin, Vector3.down, out hit, terrainHeight + maxHeightTolerance, terrainLayerMask))
                     {
                         if (hit.transform.GetComponent<Flower>() != null) continue;
                         Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
@@ -138,18 +134,51 @@ namespace FireSimulation.Vegetation
 
         public void FireRandom()
         {
-            int randomIndex = UnityEngine.Random.Range(0, spawnedPlants);
-            Transform child = transform.GetChild(randomIndex);
-            if (child == null) return;
+            for (int i = 0; i < randomIgnition; i++)
+            {
+                int randomIndex = UnityEngine.Random.Range(0, spawnedPlants);
+                Transform child = transform.GetChild(randomIndex);
+                if (child == null) return;
 
-            Combustible combustible = child.GetComponent<Combustible>();
-            if (combustible == null) return;
-            combustible.Ignite();
+                Combustible combustible = child.GetComponent<Combustible>();
+                if (combustible == null) return;
+                combustible.Ignite();
+            }
         }
 
         public WeatherControl GetWeatherControl()
         {
             return weatherControl;
+        }
+
+        public int GetMaxPlants()
+        {
+            return maxPlants;
+        }
+
+        public void SetMaxPlants(int value)
+        {
+            maxPlants = value;
+        }
+
+        public float GetMaxRadius()
+        {
+            return spawnRadius;
+        }
+
+        public void SetMaxRadius(float value)
+        {
+            this.spawnRadius = value;
+        }
+
+        public void SetGrid(bool state)
+        {
+            gridSpawn = state;
+        }
+
+        public bool GetGrid()
+        {
+            return gridSpawn;
         }
     }
 }

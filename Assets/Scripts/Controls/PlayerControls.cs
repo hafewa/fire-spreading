@@ -1,7 +1,6 @@
 ﻿using FireSimulation.Vegetation;
 using FireSimulation.Core;
 using UnityEngine;
-using FireSimulation.UI;
 using System;
 using UnityEngine.EventSystems;
 

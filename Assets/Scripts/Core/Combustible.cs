@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using FireSimulation.Vegetation;
 using UnityEngine;
 
@@ -11,8 +9,7 @@ namespace FireSimulation.Core
         [SerializeField] private LayerMask combustibleLayerMask; // Combustible layer mask
         [SerializeField] private float combustibility = 5f; // Time until the plant got burned (seconds)
         [SerializeField] private float maxRadius = 5f; // Max radius which fire can spread (m)
-        [SerializeField] private float spreadMult = 1.5f; // 150% windDirectioanl spread effect
-        [SerializeField] private float sideSpreadMult = 0.65f; // 65% of windDirectional spread effect
+        [SerializeField] [Range(0f, 1f)] private float sideSpreadMult = 0.65f; // 65% of windDirectional spread effect
         [SerializeField] private float backwardAngleTolerance = 0f;
         private float currentRadius = 0f; // Current spreadRadius
 
@@ -22,11 +19,11 @@ namespace FireSimulation.Core
         private Renderer _renderer;
         private MaterialPropertyBlock _propertyBlock;
 
-        private Vector3 windDirection;
-        private float windSpeed = 0f;
         private float intervalTick = 1f;
+        private WeatherControl weatherControl;
 
-        [SerializeField] private WeatherControl weatherControl;
+        [SerializeField] private float windRadius = 0f;
+        [SerializeField] private float sideRadius = 0f;
 
         private void Awake()
         {
@@ -41,11 +38,7 @@ namespace FireSimulation.Core
 
         public void Ignite()
         {
-            this.windDirection = weatherControl.GetWindDirection();
-            this.windSpeed = weatherControl.GetWindSpeed();
-
             combustion = Combustion.Burning;
-
             ChangeColor(Color.red);
             StartCoroutine(Burn());
         }
@@ -65,10 +58,10 @@ namespace FireSimulation.Core
             ChangeColor(Color.black);
         }
 
-        private void Update()
-        {
-            if (combustion == Combustion.None || combustion == Combustion.Burned) return;
-        }
+        // private void Update()
+        // {
+        //     if (combustion == Combustion.None || combustion == Combustion.Burned) return;
+        // }
 
         private IEnumerator Spread(float intervalTick)
         {
@@ -79,7 +72,7 @@ namespace FireSimulation.Core
                 if (combustibility <= 0) combustion = Combustion.Burned;
                 combustibility -= 1;
                 if (currentRadius < maxRadius)
-                    currentRadius += Time.deltaTime * windSpeed;
+                    currentRadius += Time.deltaTime;
                 IgniteInWind();
                 yield return new WaitForSeconds(intervalTick);
                 IgniteAdjacent();
@@ -90,9 +83,10 @@ namespace FireSimulation.Core
         {
             Combustible combustible;
             RaycastHit hit;
-            float radius = currentRadius * spreadMult;
-            if (Physics.Raycast(transform.position, windDirection, out hit, radius, combustibleLayerMask))
+            windRadius = currentRadius * weatherControl.GetWindSpeed();
+            if (Physics.SphereCast(transform.position, windRadius, weatherControl.GetWindDirection(), out hit, windRadius, combustibleLayerMask))
             {
+                Debug.DrawRay(transform.position, weatherControl.GetWindDirection(), Color.red, 1f);
                 if ((combustible = hit.transform.GetComponent<Combustible>()) != null)
                 {
                     if (combustible.combustion == Combustion.None)
@@ -106,10 +100,9 @@ namespace FireSimulation.Core
         private void IgniteAdjacent()
         {
             Combustible combustible;
-            float radius = currentRadius * sideSpreadMult;
+            sideRadius = currentRadius * weatherControl.GetWindSpeed();
 
-            Collider[] hitColliders = Physics.OverlapSphere(transform.position, radius, combustibleLayerMask);
-
+            Collider[] hitColliders = Physics.OverlapSphere(transform.position, sideRadius, combustibleLayerMask);
             if (hitColliders.Length > 0)
             {
                 for (int i = 0; i < hitColliders.Length; i++)
@@ -119,7 +112,7 @@ namespace FireSimulation.Core
                         if (combustible.combustion == Combustion.None)
                         {
                             Vector3 adjacentDirection = combustible.transform.position - transform.position;
-                            float angleAgainstWind = Vector3.Angle(adjacentDirection, windDirection);
+                            float angleAgainstWind = Vector3.Angle(adjacentDirection, weatherControl.GetWindDirection());
                             if (angleAgainstWind > 90 + backwardAngleTolerance) continue;
                             combustible.Ignite();
                         }
