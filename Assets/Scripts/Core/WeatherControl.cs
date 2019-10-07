@@ -2,52 +2,23 @@
 
 namespace FireSimulation.Core
 {
-
+    // Main class for Weather Control
+    // 
     public class WeatherControl : MonoBehaviour
     {
 
         [SerializeField] [Range(0, 30f)] private float windSpeed = 20f;
         [SerializeField] private Vector3 windDirection;
-        [SerializeField] [Range(0.1f, 5f)] private float weatherIntervalTick = 1f;
-
-        private LineRenderer lineRenderer;
-        private Material windMaterial;
-        private float windMaterialOffsetX = 0f;
-
-        private void Awake()
-        {
-            lineRenderer = GetComponent<LineRenderer>();
-            InitWindLines();
-        }
+        [SerializeField] [Range(0.1f, 2f)] private float windIntervalTick = 1f;
 
         private void Start()
         {
             UpdateWindRotation();
         }
 
-        private void InitWindLines()
-        {
-            windMaterial = lineRenderer.material;
-            lineRenderer.startColor = Color.blue;
-            lineRenderer.endColor = Color.blue;
-            lineRenderer.startWidth = 1.45f;
-            lineRenderer.endWidth = 1.45f;
-        }
-
-        private void DrawWindLines()
-        {
-
-            Vector3 origin = new Vector3(transform.position.x, 50f, transform.position.z);
-            Vector3 dest = GetWindDirection().normalized * 50f;
-            dest.y = 50f;
-            lineRenderer.SetPosition(0, origin);
-            lineRenderer.SetPosition(1, dest);
-        }
-
         private void UpdateWindRotation()
         {
             windDirection = new Vector3(0f, transform.rotation.eulerAngles.y, 0f);
-            DrawWindLines();
         }
 
         public float GetWindSpeed()
@@ -55,14 +26,15 @@ namespace FireSimulation.Core
             return windSpeed;
         }
 
+        // Get windDirection vector for combustible raycasting
         public Vector3 GetWindDirection()
         {
             return transform.TransformDirection(Vector3.forward);
         }
 
-        public float GetWeatherIntervalTick()
+        public float GetWindIntervalTick()
         {
-            return weatherIntervalTick;
+            return windIntervalTick;
         }
 
         public void SetWindSpeed(float value)
@@ -76,10 +48,9 @@ namespace FireSimulation.Core
             UpdateWindRotation();
         }
 
-        private void Update()
+        public void SetWindIntervalTick(float value)
         {
-            // windMaterialOffsetX -= Time.deltaTime;
-            // windMaterial.SetTextureOffset(, new Vector2(windMaterialOffsetX, 0));        
+            windIntervalTick = value;
         }
 
     }

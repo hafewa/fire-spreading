@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace FireSimulation.Controls
 {
+
+    // ControlsConfig is a simple class for storing the key bindings. This can be changed through the inspector
     public class ControlsConfig : MonoBehaviour
     {
         [Header("Key bindings")]

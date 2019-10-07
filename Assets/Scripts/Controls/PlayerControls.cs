@@ -6,27 +6,30 @@ using UnityEngine.EventSystems;
 
 namespace FireSimulation.Controls
 {
+
+    // Player Controller class for camera movement around the scene
     public class PlayerControls : MonoBehaviour
     {
         [Header("Interaction mode")]
-        [SerializeField] private InteractionMode interactionMode;
-
-        private ControlsConfig controlsConfig;
-        private VegetationFactory vegetationFactory;
-        private WeatherControl weatherControl;
+        private InteractionMode interactionMode = InteractionMode.Add;
 
         [Header("Camera settings")]
         public Transform mainCamera;
-        [SerializeField] [Range(1, 10)] private int cameraSpeed = 2;
-        [SerializeField] [Range(1, 10)] private int rotationSpeed = 2;
-        [SerializeField] [Range(1, 10)] private int speedMultiplier = 2;
-        [SerializeField] private bool freeLook = false;
+        [SerializeField] [Range(1, 10)] private int cameraSpeed = 2; // forward/backward speed of camera
+        [SerializeField] [Range(1, 10)] private int rotationSpeed = 2; // vertical/horizontal rotation speed of camera
+        [SerializeField] [Range(1, 10)] private int speedMultiplier = 2; // fastCamera mode multiplier
+        [SerializeField] private bool freeLook = false; // freeLook boolean for toggling the freeLook
 
         private float horizontalRotation = 0f;
         private float verticalRotation = 0f;
         private float speed = 0f;
 
-        public Action<InteractionMode> onModeChanged;
+        // Pointers for main application classes
+        private ControlsConfig controlsConfig;
+        private VegetationFactory vegetationFactory;
+        private WeatherControl weatherControl;
+
+        public event Action<InteractionMode> onModeChanged; // delegate invoked from UIPanel for changing the InteractionMode 
 
         private void Awake()
         {
@@ -40,7 +43,6 @@ namespace FireSimulation.Controls
 
             horizontalRotation = mainCamera.eulerAngles.x;
             verticalRotation = mainCamera.eulerAngles.y;
-
             onModeChanged(interactionMode);
         }
 
@@ -84,6 +86,7 @@ namespace FireSimulation.Controls
 
         private bool ProcessUI()
         {
+            // Prevent raycasting on terrain if UI is above
             if (EventSystem.current.IsPointerOverGameObject())
             {
                 return true;
@@ -91,7 +94,8 @@ namespace FireSimulation.Controls
             return false;
         }
 
-
+        // Simple interaction method to determine user input from mouse
+        // Based on InteractionMode enum set through the user panel it process the input
         private void ProcessInteraction()
         {
             if (Input.GetKeyDown(controlsConfig.lbm))

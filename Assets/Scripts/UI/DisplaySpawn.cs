@@ -7,7 +7,7 @@ namespace FireSimulation.UI
     {
         private UIPanel panel;
 
-        private void Start()
+        private void Awake()
         {
             panel = FindObjectOfType<UIPanel>();
             panel.onSpawnRadiusChanged += PrintSpawnValue;

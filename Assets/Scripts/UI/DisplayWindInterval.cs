@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace FireSimulation.UI
 {
 
-    public class DisplayWindDirection : MonoBehaviour
+    public class DisplayWindInterval : MonoBehaviour
     {
 
         private UIPanel panel;
@@ -13,12 +13,12 @@ namespace FireSimulation.UI
         private void Awake()
         {
             panel = FindObjectOfType<UIPanel>();
-            panel.onWindDirectionChanged += PrintWindDirection;
+            panel.onWindIntervalTickChanged += PrintWindInterval;
         }
 
-        private void PrintWindDirection(float windDirection)
+        private void PrintWindInterval(float value)
         {
-            GetComponent<Text>().text = windDirection + "°";
+            GetComponent<Text>().text = value + "s";
         }
     }
 }

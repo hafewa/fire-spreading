@@ -3,24 +3,29 @@ using UnityEngine;
 
 namespace FireSimulation.Vegetation
 {
+
+    // VegetationFactory class is responsible for instantiating of gameObjects, in our case we use vegetationPrefab gameObject to get access to Flower(Plant) gameObject.
     public class VegetationFactory : MonoBehaviour
     {
 
         [Header("Vegetation settings")]
         [SerializeField] GameObject vegetationPrefab; // Vegetation prefabs to spawn
+        public bool usePropertyBlock = false;
+
         [Header("Grid settings")]
-        [SerializeField] private bool gridSpawn = false;
-        [SerializeField] [Range(1, 10)] private float spawnRadius = 2;
+        [SerializeField] private bool gridSpawn = false; // Just a boolean for grid spawning
+        [SerializeField] [Range(1, 10)] private float spawnRadius = 2; // Grid spawn radius to put gap between plants
+
         [Header("Base settings")]
-        [SerializeField] [Range(0, 20000)] int maxPlants = 0;
-        [SerializeField] [Range(1, 10)] private int randomIgnition = 4;
+        [SerializeField] [Range(0, 20000)] private int maxPlants = 0; // Maximum of plants allowed to spawn on the map
+        [SerializeField] [Range(1, 10)] private int randomIgnition = 4; // Number of random ignition points on the map
 
         [Header("Terrain parameters")]
         [SerializeField] private LayerMask terrainLayerMask;
         [SerializeField] private Terrain terrainObject;
 
-        private float maxHeightTolerance = 10f;
-        private int terrainEdgePadding = 4;
+        private float maxHeightTolerance = 10f; // Just some additional value for setting origin of raycast to spawn on the terrain
+        private int terrainEdgePadding = 4; // Value for padding, so the VegetationFactory don't spawn plants on the edge of the map
 
         private float terrainWidth = 0f;
         private float terrainLength = 0f;
@@ -36,6 +41,7 @@ namespace FireSimulation.Vegetation
             weatherControl = FindObjectOfType<WeatherControl>();
         }
 
+        // In start method we get propertis from terrain gameobject to determine the size and height of our terrain.
         private void Start()
         {
             if (terrainObject == null)
@@ -53,6 +59,7 @@ namespace FireSimulation.Vegetation
             Generate();
         }
 
+        // Generate method is spawning prefabs on terrain and checks for terrainLayerMask so it spawns only on the terrain 
         private void Generate()
         {
             ClearVegetation();
@@ -70,7 +77,7 @@ namespace FireSimulation.Vegetation
                         rayCastOrigin = new Vector3(x, terrainHeight + maxHeightTolerance, z);
                         if (Physics.SphereCast(rayCastOrigin, spawnRadius, Vector3.down, out hit, terrainHeight + maxHeightTolerance, terrainLayerMask))
                         {
-                            Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
+                            GameObject _instance = Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
                             spawnedPlants++;
                             x += spawnRadius;
                         }
@@ -95,7 +102,7 @@ namespace FireSimulation.Vegetation
                     if (Physics.Raycast(rayCastOrigin, Vector3.down, out hit, terrainHeight + maxHeightTolerance, terrainLayerMask))
                     {
                         if (hit.transform.GetComponent<Flower>() != null) continue;
-                        Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
+                        GameObject _instance = Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
                         spawnedPlants++;
                     }
                 }
@@ -118,7 +125,9 @@ namespace FireSimulation.Vegetation
         public void SpawnFlower(Vector3 point)
         {
             spawnedPlants++;
-            Instantiate(vegetationPrefab, point, Quaternion.identity, transform);
+            Combustible newCombustible = Instantiate(vegetationPrefab, point, Quaternion.identity, transform).GetComponent<Combustible>();
+            if (newCombustible == null) return;
+            newCombustible.CheckAdjacentOnFire();
         }
 
         public void RemoveFlower(Flower flower)
@@ -134,6 +143,7 @@ namespace FireSimulation.Vegetation
 
         public void FireRandom()
         {
+            if (transform.childCount == 0) return;
             for (int i = 0; i < randomIgnition; i++)
             {
                 int randomIndex = UnityEngine.Random.Range(0, spawnedPlants);
