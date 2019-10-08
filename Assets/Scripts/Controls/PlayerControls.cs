@@ -24,8 +24,8 @@ namespace FireSimulation.Controls
         [SerializeField] [Range(1, 10)] private int speedMultiplier = 2; // fastCamera mode multiplier
         [SerializeField] private bool freeLook = false; // freeLook boolean for toggling the freeLook
 
-        private float horizontalRotation = 0f;
-        private float verticalRotation = 0f;
+        private float yRotation = 0f;
+        private float xRotation = 0f;
         private float speed = 0f;
 
         // Pointers for main application classes
@@ -44,9 +44,9 @@ namespace FireSimulation.Controls
 
         private void Start()
         {
-            horizontalRotation = mainCamera.eulerAngles.x;
-            verticalRotation = mainCamera.eulerAngles.y;
             onModeChanged(interactionMode);
+            yRotation = mainCamera.localEulerAngles.x;
+            xRotation = mainCamera.localEulerAngles.y;
         }
 
         public void ChangeInteractionMode()
@@ -180,10 +180,12 @@ namespace FireSimulation.Controls
                 mainCamera.Translate(Vector3.right * speed);
             }
 
-            horizontalRotation += Input.GetAxis("Mouse X");
-            verticalRotation -= Input.GetAxis("Mouse Y");
 
-            mainCamera.eulerAngles = new Vector3(Mathf.Clamp(verticalRotation * rotationSpeed, -90.0f, 90.0f), horizontalRotation * rotationSpeed, 0.0f);
+            yRotation += Input.GetAxis("Mouse X") * rotationSpeed;
+            xRotation -= Input.GetAxis("Mouse Y") * rotationSpeed;
+
+
+            mainCamera.eulerAngles = new Vector3(Mathf.Clamp(xRotation, -90.0f, 90.0f), yRotation, 0.0f);
         }
 
         private bool ToggleFreeLook()
