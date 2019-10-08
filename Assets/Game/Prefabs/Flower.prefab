@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 9153736149209533648}
   - component: {fileID: 9153736149209533663}
   - component: {fileID: 9153736149209533662}
-  - component: {fileID: 9153736149209533649}
   - component: {fileID: 4696202564961490648}
   - component: {fileID: 4783537838313259519}
+  - component: {fileID: 8325002123082991928}
+  - component: {fileID: 5267600346411642777}
   m_Layer: 9
   m_Name: Flower
   m_TagString: Combustible
@@ -60,7 +61,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 4852b2809ce8fd045857bd30ecf8cacb, type: 2}
+  - {fileID: 2100000, guid: 4c120e57d5bfcd846a2ab650b4a5ef50, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -80,19 +81,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!65 &9153736149209533649
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9153736149209533651}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &4696202564961490648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,6 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4cfd9a0065824734ca1c358984ff25c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  usePropertyBlock: 1
 --- !u!114 &4783537838313259519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -121,11 +110,41 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 512
   combustibility: 30
-  maxRadius: 5
-  sideSpreadMult: 0.4
-  backwardAngleTolerance: -30
+  maxRadius: 4
+  radiusGrowSpeed: 0.25
+  radiusWindMultiplier: 0.25
+  backwardAngleTolerance: 90
   currentRadius: 0
-  growRadiusSpeed: 5
-  noneColor: {r: 0, g: 0, b: 0, a: 0}
-  onFireColor: {r: 0, g: 0, b: 0, a: 0}
-  burnedColor: {r: 0, g: 0, b: 0, a: 0}
+  colorMappings:
+  - combustion: 0
+    color: {r: 0.50524676, g: 1, b: 0, a: 0}
+  - combustion: 1
+    color: {r: 0.9245283, g: 0.16036673, b: 0.013082923, a: 0}
+  - combustion: 2
+    color: {r: 0.13207549, g: 0.13207549, b: 0.13207549, a: 0}
+--- !u!65 &8325002123082991928
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9153736149209533651}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!135 &5267600346411642777
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9153736149209533651}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.01
+  m_Center: {x: 0, y: 0, z: 0}

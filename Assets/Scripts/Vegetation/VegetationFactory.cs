@@ -10,7 +10,6 @@ namespace FireSimulation.Vegetation
 
         [Header("Vegetation settings")]
         [SerializeField] GameObject vegetationPrefab; // Vegetation prefabs to spawn
-        public bool usePropertyBlock = false;
 
         [Header("Grid settings")]
         [SerializeField] private bool gridSpawn = false; // Just a boolean for grid spawning
@@ -21,24 +20,24 @@ namespace FireSimulation.Vegetation
         [SerializeField] [Range(1, 10)] private int randomIgnition = 4; // Number of random ignition points on the map
 
         [Header("Terrain parameters")]
-        [SerializeField] private LayerMask terrainLayerMask;
-        [SerializeField] private Terrain terrainObject;
+        [SerializeField] private LayerMask terrainLayerMask; // LayerMask for raycast to spawn vegetationPrefabs only on terrain layer mask
+        [SerializeField] private Terrain terrainObject; // terrain object assigned in the inspector to determine size of terrain
+        [SerializeField] private float maxHeightTolerance = 10f; // Just some additional value for setting origin of raycast to spawn on the terrain
+        [SerializeField] private int terrainEdgePadding = 4; // Value for padding, so the VegetationFactory don't spawn plants on the edge of the map
 
-        private float maxHeightTolerance = 10f; // Just some additional value for setting origin of raycast to spawn on the terrain
-        private int terrainEdgePadding = 4; // Value for padding, so the VegetationFactory don't spawn plants on the edge of the map
-
-        private float terrainWidth = 0f;
-        private float terrainLength = 0f;
-        private float terrainHeight = 0f;
-
-        private WeatherControl weatherControl;
+        [Header("Terrain size")]
+        public float terrainWidth = 0f;
+        public float terrainLength = 0f;
+        public float terrainHeight = 0f;
 
         [Header("Results")]
         public int spawnedPlants = 0;
+        private WeatherControl weatherControl;
 
         private void Awake()
         {
             weatherControl = FindObjectOfType<WeatherControl>();
+            weatherControl.onSimulationStateChanged += ToggleAll;
         }
 
         // In start method we get propertis from terrain gameobject to determine the size and height of our terrain.
@@ -52,6 +51,7 @@ namespace FireSimulation.Vegetation
             terrainWidth = terrainObject.terrainData.size.x;
             terrainLength = terrainObject.terrainData.size.z;
             terrainHeight = terrainObject.terrainData.size.y;
+            weatherControl.regionSize = new Vector3(terrainWidth, terrainHeight, terrainLength);
         }
 
         public void GenerateVegetation()
@@ -75,13 +75,14 @@ namespace FireSimulation.Vegetation
                     for (z = terrainEdgePadding; z < terrainLength;)
                     {
                         rayCastOrigin = new Vector3(x, terrainHeight + maxHeightTolerance, z);
+                        // In gridSpawn, SphereCast is used to 
                         if (Physics.SphereCast(rayCastOrigin, spawnRadius, Vector3.down, out hit, terrainHeight + maxHeightTolerance, terrainLayerMask))
                         {
-                            GameObject _instance = Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
+                            Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
                             spawnedPlants++;
                             x += spawnRadius;
                         }
-                        if (x > terrainWidth - terrainEdgePadding)
+                        if (x > terrainWidth - terrainEdgePadding) // Padding avoidance - used for spawning plants away from edge
                         {
                             x = terrainEdgePadding;
                             z += spawnRadius;
@@ -102,13 +103,14 @@ namespace FireSimulation.Vegetation
                     if (Physics.Raycast(rayCastOrigin, Vector3.down, out hit, terrainHeight + maxHeightTolerance, terrainLayerMask))
                     {
                         if (hit.transform.GetComponent<Flower>() != null) continue;
-                        GameObject _instance = Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
+                        Instantiate(vegetationPrefab, hit.point, Quaternion.identity, transform);
                         spawnedPlants++;
                     }
                 }
             }
         }
 
+        // Removes all children gameObjects from VegetationFactory transform
         public void ClearVegetation()
         {
             if (transform.childCount > 0)
@@ -122,12 +124,11 @@ namespace FireSimulation.Vegetation
             return;
         }
 
+        // Instantiates Flower(Plant) prefab on certain point
         public void SpawnFlower(Vector3 point)
         {
             spawnedPlants++;
-            Combustible newCombustible = Instantiate(vegetationPrefab, point, Quaternion.identity, transform).GetComponent<Combustible>();
-            if (newCombustible == null) return;
-            newCombustible.CheckAdjacentOnFire();
+            Instantiate(vegetationPrefab, point, Quaternion.identity, transform);
         }
 
         public void RemoveFlower(Flower flower)
@@ -144,15 +145,18 @@ namespace FireSimulation.Vegetation
         public void FireRandom()
         {
             if (transform.childCount == 0) return;
+            int ignited = 0;
             for (int i = 0; i < randomIgnition; i++)
             {
-                int randomIndex = UnityEngine.Random.Range(0, spawnedPlants);
-                Transform child = transform.GetChild(randomIndex);
-                if (child == null) return;
-
-                Combustible combustible = child.GetComponent<Combustible>();
-                if (combustible == null) return;
-                combustible.Ignite();
+                Combustible combustible;
+                foreach (Transform child in transform)
+                {
+                    if (ignited >= randomIgnition) return;
+                    if ((combustible = child.GetComponent<Combustible>()) == null) continue;
+                    if (!combustible.IsHealthy()) continue;
+                    weatherControl.IgniteFire(combustible.transform.position);
+                    ignited++;
+                }
             }
         }
 
@@ -190,6 +194,18 @@ namespace FireSimulation.Vegetation
         {
             return gridSpawn;
         }
+
+        private void ToggleAll(bool state)
+        {
+            Combustible combustible;
+            foreach (Transform child in transform)
+            {
+                if ((combustible = child.GetComponent<Combustible>()) == null) continue;
+                if (!combustible.IsBurning()) continue;
+                combustible.ToggleBurning(state);
+            }
+        }
+
     }
 }
 

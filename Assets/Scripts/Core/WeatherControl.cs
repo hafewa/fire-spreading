@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace FireSimulation.Core
 {
@@ -6,14 +7,27 @@ namespace FireSimulation.Core
     // 
     public class WeatherControl : MonoBehaviour
     {
+        [Header("Simulation state")]
+        [SerializeField] private bool isSimulationActive = true;
 
-        [SerializeField] [Range(0, 30f)] private float windSpeed = 20f;
-        [SerializeField] private Vector3 windDirection;
-        [SerializeField] [Range(0.1f, 2f)] private float windIntervalTick = 1f;
+        [Header("Weather conditions")]
+        [SerializeField] [Range(0, 30f)] private float windSpeed = 20f; // Wind speed variable - moves with fire object
+        [SerializeField] private Vector3 windDirection; // Wind rotation - gives direction to fire object
+        [SerializeField] [Range(0.1f, 2f)] private float combustionTick = 1f; // Time variable to tick in Combustible Burn coroutine
+        [SerializeField] [Range(0, 360)] private float backFireAngle = 0; // Angle tolerance to ignite plants behind itself 
+
+        [Header("GameObjects")]
+        [SerializeField] private Transform fireContainer;
+        [SerializeField] private GameObject firePrefab;
+
+        public Vector3 regionSize = Vector3.zero;
+
+        public event Action<bool> onSimulationStateChanged;
 
         private void Start()
         {
             UpdateWindRotation();
+            onSimulationStateChanged(isSimulationActive);
         }
 
         private void UpdateWindRotation()
@@ -34,7 +48,17 @@ namespace FireSimulation.Core
 
         public float GetWindIntervalTick()
         {
-            return windIntervalTick;
+            return combustionTick;
+        }
+
+        public float GetFireAngle()
+        {
+            return backFireAngle;
+        }
+
+        public bool GetSimulationState()
+        {
+            return isSimulationActive;
         }
 
         public void SetWindSpeed(float value)
@@ -50,7 +74,34 @@ namespace FireSimulation.Core
 
         public void SetWindIntervalTick(float value)
         {
-            windIntervalTick = value;
+            combustionTick = value;
+        }
+
+        public void SetFireAngle(float value)
+        {
+            backFireAngle = value;
+        }
+
+        public void ToggleSimulationState()
+        {
+            isSimulationActive = !isSimulationActive;
+            onSimulationStateChanged(isSimulationActive);
+        }
+
+        public void IgniteFire(Vector3 position)
+        {
+            Instantiate(firePrefab, position, Quaternion.identity, fireContainer);
+        }
+
+        public void RemoveAllFire()
+        {
+            foreach (Transform child in fireContainer)
+            {
+                if (child.GetComponent<Fire>() != null)
+                {
+                    Destroy(child.gameObject);
+                }
+            }
         }
 
     }

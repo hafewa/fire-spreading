@@ -12,6 +12,10 @@ namespace FireSimulation.Controls
     {
         [Header("Interaction mode")]
         private InteractionMode interactionMode = InteractionMode.Add;
+        [SerializeField] private LayerMask interactionLayerMask;
+
+        [Header("Simulation")]
+        private bool simulationState = true;
 
         [Header("Camera settings")]
         public Transform mainCamera;
@@ -40,7 +44,6 @@ namespace FireSimulation.Controls
 
         private void Start()
         {
-
             horizontalRotation = mainCamera.eulerAngles.x;
             verticalRotation = mainCamera.eulerAngles.y;
             onModeChanged(interactionMode);
@@ -61,13 +64,20 @@ namespace FireSimulation.Controls
             onModeChanged(interactionMode);
         }
 
+        public void ChangeSimulationState()
+        {
+            weatherControl.ToggleSimulationState();
+        }
+
         public void GenerateVegetation()
         {
+            weatherControl.RemoveAllFire();
             vegetationFactory.GenerateVegetation();
         }
 
         public void ClearVegetation()
         {
+            weatherControl.RemoveAllFire();
             vegetationFactory.ClearVegetation();
         }
 
@@ -79,7 +89,7 @@ namespace FireSimulation.Controls
 
         private void LateUpdate()
         {
-            if (FreeLook())
+            if (FreeLook() || ToggleFreeLook())
                 CameraMovement();
             else return;
         }
@@ -101,16 +111,18 @@ namespace FireSimulation.Controls
             if (Input.GetKeyDown(controlsConfig.lbm))
             {
                 RaycastHit hit;
-                if (Physics.Raycast(GetMouseRay(), out hit))
+                if (Physics.Raycast(GetMouseRay(), out hit, interactionLayerMask))
                 {
                     switch (interactionMode)
                     {
+                        // Adding plants
                         case InteractionMode.Add:
                             if (hit.transform.GetComponent<Combustible>() == null)
                             {
                                 vegetationFactory.SpawnFlower(hit.point);
                             }
                             break;
+                        // Removing plants
                         case InteractionMode.Remove:
                             Flower flower = hit.transform.GetComponent<Flower>();
                             if (flower != null)
@@ -118,13 +130,14 @@ namespace FireSimulation.Controls
                                 vegetationFactory.RemoveFlower(flower);
                             }
                             break;
+                        // Toggle between ignition and extinguishing
                         case InteractionMode.Toggle:
                             Combustible combustible = hit.transform.GetComponent<Combustible>();
                             if (combustible == null) return;
                             if (combustible.IsBurning())
                                 combustible.Extinguish();
                             else
-                                combustible.Ignite();
+                                weatherControl.IgniteFire(hit.point);
                             break;
                     }
                 }

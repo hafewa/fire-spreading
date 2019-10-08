@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace FireSimulation.UI
 {
 
-    public class DisplayWindInterval : MonoBehaviour
+    public class DisplayCombustionRate : MonoBehaviour
     {
 
         private UIPanel panel;
@@ -13,12 +13,12 @@ namespace FireSimulation.UI
         private void Awake()
         {
             panel = FindObjectOfType<UIPanel>();
-            panel.onWindIntervalTickChanged += PrintWindInterval;
+            panel.onCombustionRateChanged += PrintCombustionRate;
         }
 
-        private void PrintWindInterval(float value)
+        private void PrintCombustionRate(float value)
         {
-            GetComponent<Text>().text = value + "s";
+            GetComponent<Text>().text = value.ToString();
         }
     }
 }

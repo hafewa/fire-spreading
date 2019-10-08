@@ -12,4 +12,14 @@ Namespaces:
 Control - Control and user input classes responsible for interaction
 Core - Core functionality like fire physics and combustible class
 UI - User Interfaces classes
-Vegetation - 
+Vegetation - Flower class and VegetationFactory responsible for instantiating of vegetation prefabs
+
+
+Method of fire propagation:
+
+I've initially made a coroutine in Combustible class which was raycasting two Physics cassts. 
+- SphereCast + OverlapSphere
+- This was used to determine adjacent objects, in front of the plant and then around the burning plant. 
+
+Unfortunatelly this solution was quite performence consuming so I decided to create separate Fire class to have only one gameobject responsible for fire. 
+This gameobject moves around the map within region of the terrain and spread its radius to ignige all adjacent plants within fire object radius. 

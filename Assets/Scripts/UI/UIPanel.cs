@@ -15,7 +15,8 @@ namespace FireSimulation.UI
 
         public Slider windSpeedSlider;
         public Slider windDirectionSlider;
-        public Slider windIntervalTickSlider;
+        public Slider combustionRateSlider;
+        public Slider fireAngleSlider;
         public Slider spawnRadius;
         public Slider maxPlants;
 
@@ -24,7 +25,8 @@ namespace FireSimulation.UI
         // Public delegates for change states and updating values so we can avoid of udpating values through update function        
         public event Action<float> onWindSpeedChanged;
         public event Action<float> onWindDirectionChanged;
-        public event Action<float> onWindIntervalTickChanged;
+        public event Action<float> onCombustionRateChanged;
+        public event Action<float> onFireAngleChanged;
         public event Action<float> onSpawnRadiusChanged;
         public event Action<float> onMaxPlantsChanged;
 
@@ -38,6 +40,7 @@ namespace FireSimulation.UI
         {
             windDirectionSlider.value = weatherControl.transform.eulerAngles.y;
             windSpeedSlider.value = weatherControl.GetWindSpeed();
+            fireAngleSlider.value = weatherControl.GetFireAngle();
             spawnRadius.value = vegetationFactory.GetMaxRadius();
             maxPlants.value = vegetationFactory.GetMaxPlants();
             toggleGrid.isOn = vegetationFactory.GetGrid();
@@ -45,28 +48,25 @@ namespace FireSimulation.UI
 
         public void ChangeWindSpeed()
         {
-            windSpeedSlider.value = Mathf.Floor(windSpeedSlider.value * 100) / 100;
             weatherControl.SetWindSpeed(windSpeedSlider.value);
             onWindSpeedChanged(windSpeedSlider.value);
         }
 
         public void ChangeWindDirection()
         {
-            windDirectionSlider.value = Mathf.Floor(windDirectionSlider.value * 100) / 100;
             weatherControl.SetWindDirection(windDirectionSlider.value);
             onWindDirectionChanged(windDirectionSlider.value);
         }
 
         public void ChangeWindIntervalTick()
         {
-            windIntervalTickSlider.value = Mathf.Floor(windIntervalTickSlider.value * 100) / 100;
-            weatherControl.SetWindIntervalTick(windIntervalTickSlider.value);
-            onWindIntervalTickChanged(windIntervalTickSlider.value);
+            combustionRateSlider.value = Mathf.Floor(combustionRateSlider.value * 100) / 100;
+            weatherControl.SetWindIntervalTick(combustionRateSlider.value);
+            onCombustionRateChanged(combustionRateSlider.value);
         }
 
         public void ChangeSpawnRadius()
         {
-            spawnRadius.value = Mathf.Floor(spawnRadius.value * 100) / 100;
             vegetationFactory.SetMaxRadius(spawnRadius.value);
             onSpawnRadiusChanged(spawnRadius.value);
         }
@@ -75,6 +75,17 @@ namespace FireSimulation.UI
         {
             vegetationFactory.SetMaxPlants((int)maxPlants.value);
             onMaxPlantsChanged(maxPlants.value);
+        }
+
+        public void ChangeFireAngle()
+        {
+            weatherControl.SetFireAngle(fireAngleSlider.value);
+            onFireAngleChanged(fireAngleSlider.value);
+        }
+
+        public void ChangeSimulationState()
+        {
+            weatherControl.ToggleSimulationState();
         }
 
         public void ToggleGrid()
